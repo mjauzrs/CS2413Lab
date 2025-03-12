@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *in_stack;                                    //stack for enqueue
+    int *out_stack;                                   //stack for dequeue
+    int in_size;                                      //num of elements in enqueue
+    int out_size;                                     //num of elements in dequeue
+    int capacity;                                     
+} MyQueue;
+
+MyQueue* myQueueCreate() {
+    MyQueue* obj = (MyQueue*)malloc(sizeof(MyQueue));
+    obj->capacity = 1000; //random
+    obj->in_stack = (int*)malloc(sizeof(int) * obj->capacity);
+    obj->out_stack = (int*)malloc(sizeof(int) * obj->capacity);
+    obj->in_size = 0;
+    obj->out_size = 0;
+    return obj;
+}
+
+void myQueuePush(MyQueue* obj, int x) {
+    obj->in_stack[obj->in_size++] = x;          //add x to enqueue stack & inc size
+}
+
+int myQueuePop(MyQueue* obj) {
+    if (obj->out_size == 0) {                   //if dequeue is empty
+        while (obj->in_size > 0) {              //move elements from enqueue to dequeue until enqueue empty
+            obj->out_stack[obj->out_size++] = obj->in_stack[--obj->in_size];
+        }
+    }
+    
+    return obj->out_stack[--obj->out_size];
+}
+
+int myQueuePeek(MyQueue* obj) {                 //transfer elements from enqueue to dequeue 
+    if (obj->out_size == 0) {
+        while (obj->in_size > 0) {
+            obj->out_stack[obj->out_size++] = obj->in_stack[--obj->in_size];
+        }
+    }
+    return obj->out_stack[obj->out_size - 1];   //top element of dequeue will be first element from enqueue/ top of stack
+}
+
+bool myQueueEmpty(MyQueue* obj) {
+    return obj->in_size == 0 && obj->out_size == 0;         //empty if both enqueue and dequeue empty
+}
+
+void myQueueFree(MyQueue* obj) {
+    free(obj->in_stack);
+    free(obj->out_stack);
+    free(obj);
+}
+
+/**
+ * Your MyQueue struct will be instantiated and called as such:
+ * MyQueue* obj = myQueueCreate();
+ * myQueuePush(obj, x);
+ 
+ * int param_2 = myQueuePop(obj);
+ 
+ * int param_3 = myQueuePeek(obj);
+ 
+ * bool param_4 = myQueueEmpty(obj);
+ 
+ * myQueueFree(obj);
+*/
