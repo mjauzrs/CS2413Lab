@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {                   //linked list structure
+    int data;
+    struct Node* next;
+};
+
+typedef struct {                   //queue structure using linked list
+    struct Node* front;
+    struct Node* rear;
+    int size;
+} Queue;
+
+typedef struct {                    //stack structure using two queues
+    Queue* queue1;
+    Queue* queue2;
+} MyStack;
+
+MyStack* myStackCreate() {
+    MyStack* obj = (MyStack*)malloc(sizeof(MyStack));       //allocate space
+    obj->queue1 = (Queue*)malloc(sizeof(Queue));            //for stack and queues
+    obj->queue2 = (Queue*)malloc(sizeof(Queue));
+    obj->queue1->front = obj->queue1->rear = NULL;          //both queues are empty
+    obj->queue2->front = obj->queue2->rear = NULL;
+    obj->queue1->size = obj->queue2->size = 0;
+    return obj;
+}
+
+void myStackPush(MyStack* obj, int x) {         //enqueue function
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = x;                          //add given int
+    newNode->next = NULL;                       //create next and set to null
+    
+    if (obj->queue1->rear == NULL) {                        //if rear == null (empty)
+        obj->queue1->front = obj->queue1->rear = newNode;   //set front and rear to point to new node
+    } else {
+        obj->queue1->rear->next = newNode;                  //else, set the next of current rear to point 
+        obj->queue1->rear = newNode;                        //to new node
+    }
+    obj->queue1->size++;                                    //increment size of queue
+}
+
+int myStackPop(MyStack* obj) {                              //move from queue1 to queue2
+    while (obj->queue1->size > 1) {
+        struct Node* temp = obj->queue1->front;             //dequeue from queue1 and enqueue to queue2
+        obj->queue1->front = obj->queue1->front->next;
+        temp->next = NULL;
+        
+        if (obj->queue2->rear == NULL) {
+            obj->queue2->front = obj->queue2->rear = temp;
+        } else {
+            obj->queue2->rear->next = temp;
+            obj->queue2->rear = temp;
+        }
+        obj->queue1->size--;
+        obj->queue2->size++;
+    }
+    
+    int top = obj->queue1->front->data;                             //last element of queue1 is top of stack
+    
+    struct Node* temp = obj->queue1->front;                         //dequeue the last element
+    obj->queue1->front = obj->queue1->front->next;
+    free(temp);
+    obj->queue1->size--;
+
+    Queue* tempQueue = obj->queue1;                                  //swap queues
+    obj->queue1 = obj->queue2;
+    obj->queue2 = tempQueue;
+    
+    return top;
+}
+
+int myStackTop(MyStack* obj) {                                      //peek (return element on top of stack)
+    while (obj->queue1->size > 1) {                                  //dequeue from queue1 to queue2 until last element
+        struct Node* temp = obj->queue1->front;
+        obj->queue1->front = obj->queue1->front->next;
+        temp->next = NULL;
+        
+        if (obj->queue2->rear == NULL) {
+            obj->queue2->front = obj->queue2->rear = temp;
+        } else {
+            obj->queue2->rear->next = temp;
+            obj->queue2->rear = temp;
+        }
+        obj->queue1->size--;
+        obj->queue2->size++;
+    }
+
+    int top = obj->queue1->front->data;                                 //last element of queue1/ top element
+    
+    struct Node* temp = obj->queue1->front;                             //enqueue it to queue2
+    obj->queue1->front = obj->queue1->front->next;
+    temp->next = NULL;
+    
+    if (obj->queue2->rear == NULL) {
+        obj->queue2->front = obj->queue2->rear = temp;
+    } else {
+        obj->queue2->rear->next = temp;
+        obj->queue2->rear = temp;
+    }
+    obj->queue1->size--;
+    obj->queue2->size++;
+
+    Queue* tempQueue = obj->queue1;                                 //swap queues
+    obj->queue1 = obj->queue2;
+    obj->queue2 = tempQueue;
+    
+    return top;
+}
+
+bool myStackEmpty(MyStack* obj) {                                   //stack empty = queue1 empty
+    return obj->queue1->size == 0;
+}
+
+void myStackFree(MyStack* obj) {
+    free(obj->queue1);
+    free(obj->queue2);
+    free(obj);
+}
+
+/**
+ * Your MyStack struct will be instantiated and called as such:
+ * MyStack* obj = myStackCreate();
+ * myStackPush(obj, x);
+ * 
+ * int param_2 = myStackPop(obj);
+ * 
+ * int param_3 = myStackTop(obj);
+ * 
+ * bool param_4 = myStackEmpty(obj);
+ * 
+ * myStackFree(obj);
+*/
