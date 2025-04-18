@@ -1,0 +1,33 @@
+/*struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+ };
+
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* preorderTraversal(struct TreeNode* root, int* returnSize) {
+    int* result = (int*)malloc(100 * sizeof(int)); // max 100 nodes
+    int stackSize = 0;
+    struct TreeNode* stack[100];
+    *returnSize = 0;
+
+    if (root) {
+        stack[stackSize++] = root;
+    }
+
+    while (stackSize > 0) {
+        struct TreeNode* node = stack[--stackSize]; // pop
+        result[(*returnSize)++] = node->val;        // visit
+
+        // push right first so left is processed first
+        if (node->right) {
+            stack[stackSize++] = node->right;
+        }
+        if (node->left) {
+            stack[stackSize++] = node->left;
+        }
+    }
+
+    return result;
+}
